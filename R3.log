@@ -1,0 +1,132 @@
+﻿R3#sh run
+Building configuration...
+
+Current configuration : 1710 bytes
+!
+! Last configuration change at 12:05:32 UTC Thu Jan 19 2023
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+!
+hostname R3
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+ip cef    
+no ipv6 cef
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+crypto keyring ckey  
+  pre-shared-key address 1.1.1.1 key 123456
+!
+crypto isakmp policy 10
+ hash md5
+ authentication pre-share
+ group 5
+crypto isakmp keepalive 10 periodic
+crypto isakmp profile isapro
+   keyring ckey
+   match identity address 1.1.1.1 255.255.255.255 
+!
+!
+crypto ipsec transform-set ts esp-des esp-md5-hmac 
+ mode transport
+!
+!
+crypto ipsec profile ipspro
+ set transform-set ts 
+ set pfs group5
+!
+!
+!
+!
+!
+!
+interface Tunnel0
+ ip address 172.16.1.2 255.255.255.0
+ ip mtu 1400
+ ip ospf mtu-ignore
+ tunnel source Ethernet1/0
+ tunnel destination 1.1.1.1
+ tunnel protection ipsec profile ipspro
+!
+interface FastEthernet0/0
+ no ip address
+ shutdown
+ duplex full
+!
+interface Ethernet1/0
+ ip address 2.2.2.1 255.255.255.0
+ ip nat outside
+ duplex full
+!
+interface Ethernet1/1
+ ip address 10.10.34.3 255.255.255.0
+ ip nat inside
+ duplex full
+!
+interface Ethernet1/2
+ no ip address
+ shutdown 
+ duplex full
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+ duplex full
+!
+router ospf 1
+ router-id 172.16.1.2
+ network 10.10.34.0 0.0.0.255 area 0
+ network 172.16.1.0 0.0.0.255 area 0
+!
+ip nat inside source list 111 interface Ethernet1/0 overload
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+!
+access-list 111 permit ip any any
+!
+!         
+!
+control-plane
+!
+!
+line con 0
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ login
+!
+!
+end
+
